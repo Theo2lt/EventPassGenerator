@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"os"
+	"strings"
 
 	"EventPassGenerator/internal/model"
 	"EventPassGenerator/internal/validation"
@@ -224,7 +225,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		}
 		pdf.SetX(leftMarginText3)
 		pdf.SetY(contentY3)
-		err = pdf.Cell(nil, "EARLY TICKET")
+		err = pdf.Cell(nil, strings.ToUpper(reservation.ReservationType))
 		if err != nil {
 			return nil, fmt.Errorf("failed to add text in block 3: %v", err)
 		}
