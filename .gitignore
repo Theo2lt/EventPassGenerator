@@ -1,0 +1,74 @@
+# ---> OS / Editor
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# JetBrains/IntelliJ
+.idea/
+
+# VSCode
+.vscode/
+
+
+# ---> Go
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+
+# Possible output directories
+bin/
+build/
+
+# Go module cache (if generated locally)
+vendor/
+
+# Test/coverage files
+*.test
+*.prof
+coverage/
+
+
+# ---> Docker
+
+# Example local Docker override config
+docker-compose.override.yml
+
+# (Add other temporary patterns related to Docker builds as needed)
+
+
+# ---> Terraform
+
+# Directory with downloaded providers
+.terraform/
+
+# Terraform lock file
+.terraform.lock.hcl
+
+# State files
+terraform.tfstate
+terraform.tfstate.backup
+
+# Intermediate plans and outputs
+*.tfplan
+plan.out
+
+# (If you use unversioned override files)
+terraform.tfvars
+override.tfvars
+
+
+# ---> Logs
+
+*.log
+
+# ---> Misc
+
+# Environment variables
+.env
