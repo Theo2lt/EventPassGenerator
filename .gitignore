@@ -63,7 +63,8 @@ plan.out
 terraform.tfvars
 override.tfvars
 
-
+# scripts
+build.sh
 # ---> Logs
 
 *.log
