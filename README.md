@@ -4,6 +4,8 @@
 
 **EventPassGenerator** is a serverless application built on AWS Lambda that generates event passes in PDF format. The application accepts event and reservation data via an API Gateway request, validates the input according to predefined rules, and produces a personalized PDF that includes event details, reservation details, and an integrated unique QR code. The resulting PDF is returned as a Base64-encoded response.
 
+![Download Event Pass PDF](./exemple/event_pass.jpeg)
+
 ---
 
 ## Features
