@@ -201,16 +201,16 @@ The header image provided should adhere to the following specifications:
 You can test the **EventPassGenerator** using the following test endpoint:
 
 **Test Endpoint:**  
-[https://ekqcygxc19.execute-api.eu-west-1.amazonaws.com/](https://ekqcygxc19.execute-api.eu-west-1.amazonaws.com/)
+[https://ta1x7wbjvc.execute-api.eu-west-1.amazonaws.com](https://ta1x7wbjvc.execute-api.eu-west-1.amazonaws.com)
 
 ### Testing Instructions
 
 1. **Method**: Use the `POST` method to send requests.
 
-2. **cURL Example**:
+2. **CURL Example**:
 
-   ```bash
-   curl -X POST \
+```bash
+curl -X POST \
      -H "Content-Type: application/json" \
      -d '{
        "name": "Tech Conference 2025",
@@ -226,19 +226,30 @@ You can test the **EventPassGenerator** using the following test endpoint:
            "reservationAt": "2025-06-01T12:00:00Z",
            "reservationType": "VIP",
            "orderNumber": "ORD123456789",
-           "ticketNumber": "TICK1234567890",
+           "ticketNumber": "TICK12345678",
            "price": "100"
+         },
+         {
+           "firstName": "Sophie",
+           "lastName": "Durand",
+           "email": "sophie.durand@example.com",
+           "reservationAt": "2025-03-02T14:45:00Z",
+           "reservationType": "General Admission",
+           "orderNumber": "ORD789013",
+           "ticketNumber": "912345678902",
+           "price": "30"
          }
        ],
-       "headerImageUrl": "https://example.com/image.jpg"
+       "headerImageUrl": "https://static.vecteezy.com/system/resources/previews/029/631/956/large_2x/light-music-festival-party-people-enjoy-concert-at-festival-free-photo.jpeg"
      }' \
-     https://ekqcygxc19.execute-api.eu-west-1.amazonaws.com/
+     https://ta1x7wbjvc.execute-api.eu-west-1.amazonaws.com/ \
+     --output file.pdf
    ```
 
 3. **Postman Instructions**:
    - Open Postman.
    - Set the request type to `POST`.
-   - Enter the test endpoint: `https://ekqcygxc19.execute-api.eu-west-1.amazonaws.com/`
+   - Enter the test endpoint: `https://ta1x7wbjvc.execute-api.eu-west-1.amazonaws.com`
    - In the **Headers** tab, set `Content-Type` to `application/json`.
    - In the **Body** tab, select **raw** and paste the JSON payload.
    - Click **Send**.
