@@ -10,7 +10,7 @@ module "lambda_function" {
   description   = "Lambda function to execute EventPassGenerator"
   image_uri     = "${aws_ecr_repository.app.repository_url}:latest"
   architectures = ["arm64"]
-  memory_size   = 150
+  memory_size   = 512
   timeout       = 200
 
   package_type   = "Image"
