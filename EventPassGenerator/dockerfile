@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1
+
+###
+# Étape 1 : Construire l'application Go pour ARM64
+###
+FROM golang:1.23.4 AS build
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copier tout le code source (y compris cmd, internal et resources)
+COPY . .
+
+# Compiler l'application Go pour Linux ARM64
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /bootstrap ./cmd/lambda
+
+###
+# Étape 2 : Préparer l'image Lambda basée sur Amazon Linux 2023
+###
+FROM public.ecr.aws/lambda/provided:al2023
+
+# Copier le binaire compilé et le renommer en "bootstrap"
+COPY --from=build /bootstrap /var/runtime/bootstrap
+
+# Copier les ressources nécessaires dans l'image finale
+COPY --from=build /app/resources/fonts /var/task/resources/fonts
+COPY --from=build /app/resources/images /var/task/resources/images
+
+# Assurer que le fichier "bootstrap" est exécutable
+RUN chmod +x /var/runtime/bootstrap
+
+# Vérifier la présence des fichiers (facultatif, utile pour le débogage)
+RUN ls -la /var/task/resources/fonts && ls -la /var/task/resources/images
+
+# Définir le point d'entrée
+CMD ["bootstrap"]
