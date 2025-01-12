@@ -7,7 +7,7 @@ variable "region" {
 variable "docker_image_name" {
   description = "The name of the Docker image to build and push to ECR"
   type        = string
-  default     = "go-ticket-api"
+  default     = "EventPassGenerator"
 }
 
 variable "docker_image_tag" {

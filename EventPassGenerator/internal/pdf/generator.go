@@ -2,17 +2,58 @@ package pdf
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
 	"EventPassGenerator/internal/model"
-	"EventPassGenerator/internal/validation"
 
 	"github.com/signintech/gopdf"
 	"github.com/skip2/go-qrcode"
 )
+
+func imagePath(HeaderImageUrl string) (string, error) {
+
+	if HeaderImageUrl == "" {
+		return "resources/images/event.jpeg", nil
+	}
+
+	resp, err := http.Get(HeaderImageUrl)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("failed to download image: invalid HTTP response")
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if contentType != "image/jpeg" && contentType != "image/jpg" {
+		return "", errors.New("unsupported image format: only JPEG is allowed")
+	}
+
+	ext := ".jpeg"
+	if strings.HasSuffix(HeaderImageUrl, ".jpg") {
+		ext = ".jpg"
+	}
+
+	outputPath := "/tmp/image" + ext
+	outFile, err := os.Create(outputPath)
+	if err != nil {
+		return "", err
+	}
+	defer outFile.Close()
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return outputPath, nil
+}
 
 func CreatePDF(event *model.Event) ([]byte, error) {
 	// 1) Initialize the PDF document (A4 size)
@@ -46,8 +87,6 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 	rightMargin := 0.0
 	totalWidth := pageWidth - leftMargin - rightMargin
 
-	fmt.Printf("Page width: %.2f, Page height: %.2f\n", pageWidth, pageHeight)
-
 	// 4) For each reservation, create a NEW page
 	for i, reservation := range event.Reservations {
 		// --- New page ---
@@ -62,41 +101,41 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		// --------------------------------------------------------------------
 		// (A) Add an image at the top of the page (full width)
 		// --------------------------------------------------------------------
-		imagePath := "resources/images/stockholm.jpg" // Path to the image
 
+		imagePath, err := imagePath(event.HeaderImageUrl)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch image: %v", err)
+		}
 		// Check if the image file exists
 		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
 			errMsg := fmt.Sprintf("Image file does not exist: %s", imagePath)
 			return nil, fmt.Errorf(errMsg)
 		}
-
 		imgFile, err := os.Open(imagePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open image: %v", err)
 		}
 		defer imgFile.Close()
-
 		// Decode to get dimensions
 		imgConfig, _, err := image.DecodeConfig(imgFile)
 		if err != nil {
+			fmt.Println(err)
 			return nil, fmt.Errorf("failed to decode image: %v", err)
 		}
 		originalWidth := float64(imgConfig.Width)
 		originalHeight := float64(imgConfig.Height)
-
-		fmt.Printf("Image width: %.2f, Image height: %.2f\n", originalWidth, originalHeight)
-
 		ratio := originalWidth / originalHeight
+		const targetRatio = 1.78
+		tolerance := 0.01
 
-		fmt.Printf("Image ratio: %.2f\n", ratio)
+		if ratio < targetRatio-tolerance || ratio > targetRatio+tolerance {
+			return nil, fmt.Errorf("image ratio %.2f is not within the acceptable range of 1.78 (16:9)", ratio)
+		}
+
 		desiredWidth := totalWidth
 		desiredHeight := desiredWidth / ratio
-
-		fmt.Printf("Desired width: %.2f, Desired height: %.2f\n", desiredWidth, desiredHeight)
-
 		xPosition := leftMargin
 		yPosition := 0.0
-
 		err = pdf.Image(imagePath, xPosition, yPosition, &gopdf.Rect{
 			W: desiredWidth,
 			H: desiredHeight,
@@ -180,7 +219,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		}
 		pdf.SetX(leftMarginText2)
 		pdf.SetY(contentY2)
-		err = pdf.Cell(nil, event.StartDate+" – "+event.EndDate)
+		err = pdf.Cell(nil, event.StartAt.Format("Mon, Jan 02, 2006, 03:04 PM")+" – "+event.EndAt.Format("Mon, Jan 02, 2006, 03:04 PM"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to add date/time text: %v", err)
 		}
@@ -242,7 +281,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		pdf.SetFont("Semibold", "", 8)
 		pdf.SetX(leftMarginText3)
 		pdf.SetY(contentY3)
-		err = pdf.Cell(nil, "Event date: "+event.StartDate+" – "+event.EndDate)
+		err = pdf.Cell(nil, "Event date: "+event.StartAt.Format("Mon, Jan 02, 2006, 03:04 PM")+" – "+event.EndAt.Format("Mon, Jan 02, 2006, 03:04 PM"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to add content in block 3: %v", err)
 		}
@@ -252,11 +291,11 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		pdf.SetX(leftMarginText3)
 		pdf.SetY(contentY3)
 
-		ReservationAt, err := validation.ConvertRFC3339ToCustom(reservation.ReservationAt)
+		ReservationAt := reservation.ReservationAt
 
 		err = pdf.Cell(nil, fmt.Sprintf("Order - N° %s - %s",
 			reservation.OrderNumber,
-			ReservationAt,
+			ReservationAt.Format("Mon, Jan 02, 2006, 03:04 PM"),
 		))
 		if err != nil {
 			return nil, fmt.Errorf("failed to add content in block 3: %v", err)
@@ -338,7 +377,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 
 		// Additional info below the QR code
 		pdf.SetFont("Semibold", "", 8)
-		pdf.SetX(qrPosX)
+		pdf.SetX(qrPosX + 12)
 		pdf.SetY(contentY4 + qrHeight + 10)
 		err = pdf.Cell(nil, fmt.Sprintf("N° %s - Price: %s€", reservation.TicketNumber, reservation.Price))
 		if err != nil {
@@ -362,7 +401,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		pdf.SetY(pageHeight - 25)
 		err = pdf.Cell(nil, footerText)
 		if err != nil {
-			return nil, fmt.Errorf("failed to add footer: %v", err)
+			return nil, fmt.Errorf("failed to add footer text: %v", err)
 		}
 	}
 
@@ -371,6 +410,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 	// ------------------------------------------------------------------------
 	var buf bytes.Buffer
 	err := pdf.Write(&buf)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate PDF: %v", err)
 	}

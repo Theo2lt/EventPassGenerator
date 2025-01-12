@@ -15,7 +15,7 @@ resource "aws_apigatewayv2_integration" "my_serverless_app_lambda_integration" {
 
 resource "aws_apigatewayv2_route" "my_serverless_app_route" {
   api_id    = aws_apigatewayv2_api.my_serverless_app_api.id
-  route_key = "ANY /{proxy+}"
+  route_key = "POST /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.my_serverless_app_lambda_integration.id}"
 }
 

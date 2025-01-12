@@ -16,32 +16,30 @@ func LambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	if err := json.Unmarshal([]byte(request.Body), &payload); err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Invalid or missing request body",
+			Body:       fmt.Sprintf("Invalid or missing request body : %v", err),
 		}, nil
 	}
 
-	event, err := validation.BuildValidatedEvent(
-		payload.Name, payload.Description, payload.Location, payload.StartDate, payload.EndDate,
-	)
+	event, err := validation.ValidatedEvent(&payload)
 	if err != nil {
+		fmt.Println(err)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
 			Body:       fmt.Sprintf("Validation error: %v", err),
 		}, nil
 	}
 
-	event.Reservations = payload.Reservations
-
 	pdfBytes, err := pdf.CreatePDF(event)
 	if err != nil {
+		fmt.Println(err)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to generate PDF",
+			Body:       fmt.Sprintf("%v", err),
 		}, nil
 	}
 
 	encoded := base64.StdEncoding.EncodeToString(pdfBytes)
-
+	fmt.Println("PDF created successfully")
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Headers: map[string]string{

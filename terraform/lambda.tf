@@ -6,11 +6,11 @@ module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.17.0"
 
-  function_name = "go-ticket-api"
-  description   = "Lambda function to execute go-ticket-api"
+  function_name = "EventPassGenerator"
+  description   = "Lambda function to execute EventPassGenerator"
   image_uri     = "${aws_ecr_repository.app.repository_url}:latest"
   architectures = ["arm64"]
-  memory_size   = 1024
+  memory_size   = 150
   timeout       = 200
 
   package_type   = "Image"
