@@ -77,7 +77,7 @@ type Event struct {
 	StartAt        time.Time `json:"startAt" validate:"required"`
 	EndAt          time.Time `json:"endAt" validate:"required,gtfield=StartAt"`
 	Reservations   []Person  `json:"reservations" validate:"required,dive"`
-	HeaderImageUrl string    `json:"headerImageUrl"`
+	HeaderImageUrl string    `json:"headerImageUrl"` //Optional
 }
 ```
 
@@ -87,7 +87,7 @@ type Event struct {
 - **StartAt**: Required starting date and time.
 - **EndAt**: Required ending date and time, which must be later than `StartAt`.
 - **Reservations**: An array of `Person` entries, all of which need to pass validation.
-- **HeaderImageUrl**: Optional URL for the header image in the PDF. If omitted, a default image will be used.
+- **HeaderImageUrl**: ***Optional*** URL for the header image in the PDF. If omitted, a default image will be used.
 
 ---
 
@@ -144,7 +144,7 @@ Instead of deploying with the AWS CLI, deploy the function using Terraform. Foll
 1. Change into the Terraform directory:
 
    ```bash
-   cd terraforme
+   cd Terraform
    ```
 
 2. Initialize Terraform (if you haven’t already):
