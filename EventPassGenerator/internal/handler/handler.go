@@ -30,7 +30,7 @@ func LambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 		}, nil
 	}
 
-	event.Reservation = payload.Reservation
+	event.Reservations = payload.Reservations
 
 	pdfBytes, err := pdf.CreatePDF(event)
 	if err != nil {

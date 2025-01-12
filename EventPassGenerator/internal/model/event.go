@@ -8,13 +8,14 @@ type Person struct {
 	ReservationType string `json:"reservationType"`
 	OrderNumber     string `json:"orderNumber"`
 	TicketNumber    string `json:"ticketNumber"`
+	Price           string `json:"price"`
 }
 
 type Event struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Location    string   `json:"location"`
-	StartDate   string   `json:"startDate"`
-	EndDate     string   `json:"endDate"`
-	Reservation []Person `json:"reservation"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Location     string   `json:"location"`
+	StartDate    string   `json:"startDate"`
+	EndDate      string   `json:"endDate"`
+	Reservations []Person `json:"reservations"`
 }

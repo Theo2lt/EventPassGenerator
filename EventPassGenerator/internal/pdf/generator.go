@@ -46,8 +46,10 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 	rightMargin := 0.0
 	totalWidth := pageWidth - leftMargin - rightMargin
 
+	fmt.Printf("Page width: %.2f, Page height: %.2f\n", pageWidth, pageHeight)
+
 	// 4) For each reservation, create a NEW page
-	for i, reservation := range event.Reservation {
+	for i, reservation := range event.Reservations {
 		// --- New page ---
 		pdf.AddPage()
 
@@ -60,7 +62,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		// --------------------------------------------------------------------
 		// (A) Add an image at the top of the page (full width)
 		// --------------------------------------------------------------------
-		imagePath := "resources/images/event.jpeg" // Path to the image
+		imagePath := "resources/images/stockholm.jpg" // Path to the image
 
 		// Check if the image file exists
 		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
@@ -82,9 +84,15 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		originalWidth := float64(imgConfig.Width)
 		originalHeight := float64(imgConfig.Height)
 
+		fmt.Printf("Image width: %.2f, Image height: %.2f\n", originalWidth, originalHeight)
+
 		ratio := originalWidth / originalHeight
+
+		fmt.Printf("Image ratio: %.2f\n", ratio)
 		desiredWidth := totalWidth
 		desiredHeight := desiredWidth / ratio
+
+		fmt.Printf("Desired width: %.2f, Desired height: %.2f\n", desiredWidth, desiredHeight)
 
 		xPosition := leftMargin
 		yPosition := 0.0
@@ -291,7 +299,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		}
 
 		// Example: "Ticket 1/5"
-		titleBlock4 := fmt.Sprintf("Ticket %d/%d", i+1, len(event.Reservation))
+		titleBlock4 := fmt.Sprintf("Ticket %d/%d", i+1, len(event.Reservations))
 		titleWidth, err := pdf.MeasureTextWidth(titleBlock4)
 		if err != nil {
 			return nil, fmt.Errorf("failed to measure text width in block 4: %v", err)
@@ -332,7 +340,7 @@ func CreatePDF(event *model.Event) ([]byte, error) {
 		pdf.SetFont("Semibold", "", 8)
 		pdf.SetX(qrPosX)
 		pdf.SetY(contentY4 + qrHeight + 10)
-		err = pdf.Cell(nil, fmt.Sprintf("N° %s - Price: 10.00€", reservation.TicketNumber))
+		err = pdf.Cell(nil, fmt.Sprintf("N° %s - Price: %s€", reservation.TicketNumber, reservation.Price))
 		if err != nil {
 			return nil, fmt.Errorf("failed to add content in block 4: %v", err)
 		}

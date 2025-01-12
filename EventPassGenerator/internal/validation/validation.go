@@ -19,10 +19,10 @@ func BuildValidatedEvent(name, description, location, startDate, endDate string)
 	if len(name) == 0 || len(name) > 50 {
 		return nil, fmt.Errorf("name length is invalid")
 	}
-	if len(description) == 0 || len(description) > 100 {
+	if len(description) == 0 || len(description) > 60 {
 		return nil, fmt.Errorf("description length is invalid")
 	}
-	if len(location) == 0 || len(location) > 100 {
+	if len(location) == 0 || len(location) > 60 {
 		return nil, fmt.Errorf("location length is invalid")
 	}
 
